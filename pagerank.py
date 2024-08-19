@@ -62,12 +62,12 @@ def transition_model(corpus, page, damping_factor=DAMPING):
     corpus_pages = len(corpus)
     if page_links_number == 0:
         for corpus_page in corpus:
-            pages_prob[corpus_page] = round(1 / corpus_pages, 2)
+            pages_prob[corpus_page] = 1 / corpus_pages
     else:
-        starting_prob = round((1 - damping_factor) / (page_links_number + 1), 2)
-        pages_prob[page] = starting_prob
+        starting_prob = (1 - damping_factor) / (page_links_number + 1)
+        pages_prob = dict.fromkeys(corpus, starting_prob)
         for link in corpus[page]:
-            pages_prob[link] = round(starting_prob + (damping_factor / page_links_number), 2)
+            pages_prob[link] = starting_prob + (damping_factor / page_links_number)
     return pages_prob
 
 def sample_pagerank(corpus, damping_factor, n):
@@ -79,15 +79,11 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    sample_pagerank_dict = {}
+    sample_pagerank_dict = dict.fromkeys(corpus, 0)
     starting_page = random.choice(list(corpus))
     for _ in range(0, n):
-        if starting_page in sample_pagerank_dict:
-            sample_pagerank_dict[starting_page] += 1
-        else:
-            sample_pagerank_dict[starting_page] = 1
         model = transition_model(corpus, starting_page, damping_factor)
-        
+        sample_pagerank_dict[starting_page] += 1
         prob_values = list(model.values())
         starting_page = (random.choices(list(model), weights=prob_values, k=1))[0]
     total_inv = 1.0/sum(sample_pagerank_dict.values())
